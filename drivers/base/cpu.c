@@ -562,11 +562,37 @@ ssize_t __weak cpu_show_tsx_async_abort(struct device *dev,
 }
 
 ssize_t __weak cpu_show_itlb_multihit(struct device *dev,
-			    struct device_attribute *attr, char *buf)
+                                      struct device_attribute *attr, char *buf)
 {
 	return sprintf(buf, "Not affected\n");
 }
 
+/* List the CVEs that are known to be addressed in this kernel */
+static const char CVE_list[] =
+	"2017-5715\n"	// Spectre-V2
+	"2017-5753\n"	// Spectre-V1
+	"2017-5754\n"	// Meltdown
+	"2018-3615\n"	// L1TF (Foreshadow)
+	"2018-3620\n"	// L1TF (Foreshadow NG)
+	"2018-3646\n"	// L1TF (Foreshadow NG)
+	"2018-12207\n"	// itlb_multihit
+	"2018-12130\n"	// mds
+	"2018-12126\n"	// mds
+	"2018-12127\n"	// mds
+	"2019-11091\n"	// mds
+	"2018-3639\n"	// speculative_store_bypass (ssb)
+	"2019-11135\n"	// tsx_async_abort
+	;
+
+ssize_t __weak cpu_show_CVE_list(struct device *dev,
+				 struct device_attribute *attr, char *buf)
+{
+	compiletime_assert(sizeof(CVE_list) <= PAGE_SIZE,
+			   "CVE_list has grown too large for sysfs PAGE_SIZE");
+	return sprintf(buf, CVE_list);
+}
+
+static DEVICE_ATTR(CVE_list, 0444, cpu_show_CVE_list, NULL);
 static DEVICE_ATTR(meltdown, 0444, cpu_show_meltdown, NULL);
 static DEVICE_ATTR(spectre_v1, 0444, cpu_show_spectre_v1, NULL);
 static DEVICE_ATTR(spectre_v2, 0444, cpu_show_spectre_v2, NULL);
@@ -577,6 +603,7 @@ static DEVICE_ATTR(tsx_async_abort, 0444, cpu_show_tsx_async_abort, NULL);
 static DEVICE_ATTR(itlb_multihit, 0444, cpu_show_itlb_multihit, NULL);
 
 static struct attribute *cpu_root_vulnerabilities_attrs[] = {
+	&dev_attr_CVE_list.attr,
 	&dev_attr_meltdown.attr,
 	&dev_attr_spectre_v1.attr,
 	&dev_attr_spectre_v2.attr,

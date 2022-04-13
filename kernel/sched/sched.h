@@ -2193,11 +2193,18 @@ const struct sched_class name##_sched_class \
 extern struct sched_class __begin_sched_classes[];
 extern struct sched_class __end_sched_classes[];
 
-#define sched_class_highest (__end_sched_classes - 1)
+/*
+ * sched_class_highests is really __end_sched_classes - 1, but written in a way
+ * that makes it clear that it is within __begin_sched_classes[] and not outside
+ * of __end_sched_classes[].
+ */
+#define sched_class_highest (__begin_sched_classes + \
+			     (__end_sched_classes - __begin_sched_classes - 1))
 #define sched_class_lowest  (__begin_sched_classes - 1)
 
+/* The + 1 below places the pointers within the range of their array */
 #define for_class_range(class, _from, _to) \
-	for (class = (_from); class != (_to); class--)
+	for (class = (_from); class + 1 != (_to) + 1; class--)
 
 #define for_each_class(class) \
 	for_class_range(class, sched_class_highest, sched_class_lowest)
